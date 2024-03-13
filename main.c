@@ -63,7 +63,7 @@ void draw_cell(cell *cp) {
   cell c = *cp; // copy
   c.P.y += 1;
   float lw = 1; // line width
-  float padding = lw + CELL_SIZE * (1-c.scale);
+  float padding = lw;
   Vector2 q = cell2screen(c);
   DrawRectangle(q.x + padding, q.y +padding , CELL_SIZE - 2*padding, CELL_SIZE-2*padding, c.color);
   int textWidth = MeasureText(c.txt, TEXT_SIZE);
@@ -75,16 +75,37 @@ void draw_cell(cell *cp) {
 void draw_cell_anim(cell *cp, float t1) {
   cell c = *cp; // copy
   c.P.y += 1;
-  float lw = 1; // line width
-  float padding = lw + CELL_SIZE * (1-c.scale);
-  Vector2 q = cell2screen(c);
+  c.Q.y += 1;
+  Vector2 q1 = xy2screen(c.P);
+  Vector2 q2 = xy2screen(c.Q);
+  // s runs from 0..1 within duration
+  float duration = .3; // seconds
+  float t = MAX(0, MIN(1, (t1 - c.t0) / duration));
+  if(c.t0 == 0) { t = 0; }
+  // q runs from q1 ... q2 within duration
+  Vector2 q = (Vector2) {
+    .x = (1-t)*q1.x + t*q2.x,
+    .y = (1-t)*q1.y + t*q2.y,
+  };
+  // calculate padding
+  float lw = 1;
+  float scale;
+  if (t==0) {
+    scale = 1;
+  }
+  if (t > 0) {
+    float scale_min = 0.75;
+    scale = (4*(t-0.5)*(t-0.5) + scale_min) / (1+scale_min);
+  }
+  if (t == 1) {
+    scale = 1;
+  }
+  float padding = lw + CELL_SIZE * (1 - scale) / 2;
   DrawRectangle(q.x + padding, q.y +padding , CELL_SIZE - 2*padding, CELL_SIZE-2*padding, c.color);
   int textWidth = MeasureText(c.txt, TEXT_SIZE);
   int textX = q.x + (CELL_SIZE - textWidth) / 2;
   int textY = q.y + (CELL_SIZE - TEXT_SIZE) / 2;
-  char txt[10];
-  snprintf(txt, 10, "%f", t1);
-  DrawText(txt, textX, textY, TEXT_SIZE, BLACK);
+  DrawText(cp->txt, textX, textY, TEXT_SIZE, BLACK);
 }
 
 void draw_grid() {
@@ -104,7 +125,6 @@ xy get_mouse_xy() {
 };
 
 void cells_clear() {
-  memset(CELLS, 0, sizeof(CELLS));
   CELLS_IDX = 0;
 }
 
@@ -115,6 +135,11 @@ cell *cells_new() {
   return cp;
 }
 
+cell *cells_get(int idx) {
+  if(idx < 0 || idx >= CELLS_IDX) return NULL;
+  return &CELLS[idx];
+}
+
 int main(void) {
   const int screenWidth = GRID_SIZE * CELL_SIZE;
   const int screenHeight = GRID_SIZE * CELL_SIZE;
@@ -122,6 +147,7 @@ int main(void) {
   SetTargetFPS(60);
   int phase = 0;
   float phase2_timer = 0;
+  int phase2_counter = 0;
   while (!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
@@ -131,6 +157,7 @@ int main(void) {
       if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         phase = 1;
         phase2_timer = 0;
+        phase2_counter = 0;
       }
       cells_clear();
       for (int y = 1; y <= mp.y; ++y) {
@@ -146,15 +173,30 @@ int main(void) {
           }
         }
       }
-    } else if (phase == 1) {
+    }
+
+    else if (phase == 1) {
       if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         phase = 0;
       }
-      phase2_timer += 1.0 / 30.0;
+      phase2_timer += 1.0 / 60.0;
+      phase2_counter++;
+      int frames_per_cell = 5;
+      if ((phase2_counter % frames_per_cell) == 0) {
+        int idx = (phase2_counter / frames_per_cell) - 1;
+        if (idx < CELLS_IDX) {
+          cell *cp = cells_get(idx);
+          cp->t0 = phase2_timer;
+          cp->Q = (xy){(idx % 10) + 1 ,  (idx / 10) + 1};
+          snprintf(cp->txt, 8, "%d",idx+1);
+        }
+      }
       for(int i = 0; i < CELLS_IDX; i++) {
+        cell *cp = cells_get(i);
         draw_cell_anim(cp, phase2_timer);
       }
     }
+
     EndDrawing();
   }
   CloseWindow();
