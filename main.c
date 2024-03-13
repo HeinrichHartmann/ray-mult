@@ -164,6 +164,9 @@ int main(void) {
         for (int x = 1; x <= mp.x; ++x) {
           cell *cp = cells_new();
           cp->P = (xy){x,y};
+          if (x == mp.x || y = mp.y) {
+            cp->color = GREEN;
+          }
           if (x == mp.x && y == mp.y) {
             cp->color = RED;
             snprintf(cp->txt, 8, "%dx%d",x,y);
