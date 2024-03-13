@@ -1,0 +1,10 @@
+{ pkgs ? import <nixpkgs> {} }:
+
+with pkgs;
+
+mkShell {
+  buildInputs = [
+    pkgs.raylib
+    pkgs.gcc
+  ];
+}
