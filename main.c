@@ -5,10 +5,11 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-#define GRID_SIZE 20
 #define CELL_SIZE 50
 #define TEXT_SIZE 17
 #define MAX_CELLS 1000
+
+int GRID_SIZE=10;
 
 typedef struct {
   int x;
@@ -150,7 +151,15 @@ cell *cells_get(int idx) {
   return &CELLS[idx];
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+  // parse first cli arg if given as integer
+  if (argc > 1) {
+    int n = atoi(argv[1]);
+    if (n > 0) {
+      GRID_SIZE = n;
+    }
+  }
+
   const int screenWidth = GRID_SIZE * CELL_SIZE;
   const int screenHeight = GRID_SIZE * CELL_SIZE;
   InitWindow(screenWidth, screenHeight, "Multiply Game");
