@@ -87,6 +87,7 @@ int main(void) {
   InitWindow(screenWidth, screenHeight, "Multiply Game");
   SetTargetFPS(60); // Set target frames-per-second
   int phase = 0;
+  float phase2_timer = 0;
   while (!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
@@ -95,6 +96,7 @@ int main(void) {
     if (phase == 0) {
       if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         phase = 1;
+        phase2_timer = 0;
       }
       cells_clear();
       for (int y = 1; y <= mp.y; ++y) {
@@ -121,11 +123,16 @@ int main(void) {
       if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         phase = 0;
       }
+      phase2_timer += 1.0 / 60.0;
       for(int i = 0; i < CELLS_IDX; i++) {
         cell *p = &CELLS[i];
         p->scale = 0.95;
-        sprintf(p->txt, "%d", i+1);
-        p->color = BLUE;
+        if(phase2_timer >= ((float)i) / 5 ) {
+          sprintf(p->txt, "%d", i+1);
+          p->scale = 1;
+          p->x = (i % 10) + 1;
+          p->y = (i / 10) + 1;
+        }
         draw_cell(p);
       }
     }
