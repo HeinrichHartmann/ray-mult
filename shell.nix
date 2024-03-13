@@ -1,10 +1,9 @@
 { pkgs ? import <nixpkgs> {} }:
 
-with pkgs;
-
-mkShell {
+pkgs.mkShell {
   buildInputs = [
     pkgs.raylib
     pkgs.gcc
+    pkgs.emscripten
   ];
 }
