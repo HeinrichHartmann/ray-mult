@@ -23,9 +23,23 @@
             cp main $out/bin/ray-multiply
           '';
         };
+        appFb = pkgs.stdenv.mkDerivation {
+          name = "ray-multiply";
+          src = ./.;
+          buildInputs = with pkgs; [ raylib gcc ];
+          buildPhase = ''
+            gcc -o main main.c -lraylib -DPLATFORM_DRM
+          '';
+          installPhase = ''
+            mkdir -p $out/bin
+            cp main $out/bin/ray-multiply-fb
+          '';
+        };
       in
       {
         defaultPackage = app;
+        packages.ray-multiply = app;
+        packages.ray-multiply-fb = appFb;
       }
     );
 }
