@@ -23,6 +23,7 @@ typedef struct {
   // for animation
   xy Q;
   float t0;
+  int hidden;
 } cell;
 
 
@@ -92,20 +93,29 @@ void draw_cell_anim(cell *cp, float t1) {
   float scale;
   if (t==0) {
     scale = 1;
+    c.color.a = 0.5 * 255;
   }
   if (t > 0) {
     float scale_min = 0.75;
     scale = (4*(t-0.5)*(t-0.5) + scale_min) / (1+scale_min);
+    c.color.a = (1-t) * 0.5 * 255 + t* 255;
   }
   if (t == 1) {
     scale = 1;
   }
+  Color tColor = BLACK;
+  for(int i = c.hidden; i > 0; i--) {
+    c.color.a = c.color.a * 0.2;
+    tColor.a = tColor.a * 0.2;
+  }
   float padding = lw + CELL_SIZE * (1 - scale) / 2;
   DrawRectangle(q.x + padding, q.y +padding , CELL_SIZE - 2*padding, CELL_SIZE-2*padding, c.color);
+  if (t>0 && t<1)
+    DrawRectangleLines(q.x + padding, q.y +padding , CELL_SIZE - 2*padding, CELL_SIZE-2*padding, BLACK);
   int textWidth = MeasureText(c.txt, TEXT_SIZE);
   int textX = q.x + (CELL_SIZE - textWidth) / 2;
   int textY = q.y + (CELL_SIZE - TEXT_SIZE) / 2;
-  DrawText(cp->txt, textX, textY, TEXT_SIZE, BLACK);
+  DrawText(cp->txt, textX, textY, TEXT_SIZE, tColor);
 }
 
 void draw_grid() {
@@ -193,7 +203,16 @@ int main(void) {
         if (idx < CELLS_IDX) {
           cell *cp = cells_get(idx);
           cp->t0 = phase2_timer;
-          cp->Q = (xy){(idx % 10) + 1 ,  (idx / 10) + 1};
+          cp->Q = (xy){
+            (idx % 10) + 1 ,
+            ((idx / 10) % 10) + 1}
+          ;
+          if(idx > 0 && idx % 100 == 0) { // overflow
+            for(int i = 0; i < idx; i++) {
+              cell *cp = cells_get(i);
+              cp->hidden += 1;
+            }
+          }
           snprintf(cp->txt, 8, "%d",idx+1);
         }
       }
