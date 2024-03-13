@@ -72,6 +72,21 @@ void draw_cell(cell *cp) {
   DrawText(c.txt, textX, textY, TEXT_SIZE, BLACK);
 }
 
+void draw_cell_anim(cell *cp, float t1) {
+  cell c = *cp; // copy
+  c.P.y += 1;
+  float lw = 1; // line width
+  float padding = lw + CELL_SIZE * (1-c.scale);
+  Vector2 q = cell2screen(c);
+  DrawRectangle(q.x + padding, q.y +padding , CELL_SIZE - 2*padding, CELL_SIZE-2*padding, c.color);
+  int textWidth = MeasureText(c.txt, TEXT_SIZE);
+  int textX = q.x + (CELL_SIZE - textWidth) / 2;
+  int textY = q.y + (CELL_SIZE - TEXT_SIZE) / 2;
+  char txt[10];
+  snprintf(txt, 10, "%f", t1);
+  DrawText(txt, textX, textY, TEXT_SIZE, BLACK);
+}
+
 void draw_grid() {
   for (int x = 1; x <= GRID_SIZE; ++x) {
     for (int y = 1; y <= GRID_SIZE; ++y) {
@@ -137,14 +152,7 @@ int main(void) {
       }
       phase2_timer += 1.0 / 30.0;
       for(int i = 0; i < CELLS_IDX; i++) {
-        cell *cp = &CELLS[i];
-        cp->scale = 0.95;
-        if(phase2_timer*10 >= i) {
-          sprintf(cp->txt, "%d", i+1);
-          cp->scale = 1;
-          cp->P = (xy){(i % 10) + 1 ,  (i / 10) + 1};
-        }
-        draw_cell(cp);
+        draw_cell_anim(cp, phase2_timer);
       }
     }
     EndDrawing();
