@@ -164,8 +164,11 @@ int main(void) {
         for (int x = 1; x <= mp.x; ++x) {
           cell *cp = cells_new();
           cp->P = (xy){x,y};
-          if (x == mp.x || y = mp.y) {
-            cp->color = GREEN;
+          if (x == mp.x) {
+            cp->color = ORANGE;
+          }
+          if (y == mp.y) {
+            cp->color = (Color) {0, 121, 150, 255};
           }
           if (x == mp.x && y == mp.y) {
             cp->color = RED;
