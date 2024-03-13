@@ -5,7 +5,7 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-#define GRID_SIZE 10
+#define GRID_SIZE 20
 #define CELL_SIZE 50
 #define TEXT_SIZE 17
 #define MAX_CELLS 1000
